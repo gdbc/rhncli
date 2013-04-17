@@ -321,7 +321,7 @@ def lclog(req,opt0=""):
 def ldeps(req,opt0=""):
    '''PACKAGE & CHANNEL MANAGEMENT| List package dependencies:\n   rhncli -c ldeps -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
 
-   if KAuth().grpcheck(perms['ldeps'],eq.user):
+   if KAuth().grpcheck(perms['ldeps'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try: 
@@ -340,7 +340,7 @@ def ldeps(req,opt0=""):
 def ldesc(req,opt0=""):
    '''PACKAGE & CHANNEL MANAGEMENT| List package description:\n   rhncli -c ldesc -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
 
-   if KAuth().grpcheck(perms['ldesc'],eq.user):
+   if KAuth().grpcheck(perms['ldesc'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -359,7 +359,7 @@ def ldesc(req,opt0=""):
 def latestpkg(req):
    '''PACKAGE & CHANNEL MANAGEMENT| Search for NEWEST available package using GENERIC name AND release OR channel:\n   rhncli -c latestpkg -p <generic package name>,5|6|<channel name>'''
 
-   if KAuth().grpcheck(perms['latestpkg'],eq.user):
+   if KAuth().grpcheck(perms['latestpkg'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -379,7 +379,7 @@ def latestpkg(req):
 def cp2chan(req,opt0=""):
    '''PACKAGE & CHANNEL MANAGEMENT| Copy package to channel:\n   rhncli -c cp2chan -p <channel label>,<EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
 
-   if KAuth().grpcheck(perms['cp2chan'],eq.user):
+   if KAuth().grpcheck(perms['cp2chan'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -399,7 +399,7 @@ def cp2chan(req,opt0=""):
 def rmpkg(req,opt0=""):
    '''PACKAGE & CHANNEL MANAGEMENT| Remove package from channel:\n   rhncli -c rmpkg -p <channel label>,<EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
 
-   if KAuth().grpcheck(perms['rmpkg'],eq.user):
+   if KAuth().grpcheck(perms['rmpkg'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -419,7 +419,7 @@ def rmpkg(req,opt0=""):
 def uppkg(req): 
    '''PACKAGE & CHANNEL MANAGEMENT| Upload package to channel:\n   rhncli -c uppkg -p <channel label>,<EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
 
-   if KAuth().grpcheck(perms['uppkg'],eq.user):
+   if KAuth().grpcheck(perms['uppkg'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -439,7 +439,7 @@ def uppkg(req):
 def downpkg(req,opt0=""):
    '''PACKAGE & CHANNEL MANAGEMENT| Download package:\n   rhncli -c downpkg -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
 
-   if KAuth().grpcheck(perms['downpkg'],eq.user):
+   if KAuth().grpcheck(perms['downpkg'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -458,7 +458,7 @@ def downpkg(req,opt0=""):
 def inpkgs(req):
    '''SYSTEM MANAGEMENT| Schedule package installs on host to start on first check in from a proposed time or use \"now\":\n   rhncli -c inpkgs -p <systemname(short)>,<YYYYMMDDTHH:MM | now><comma separated list of EXPLICIT or GENERIC(defaults to latest) pkg names>\n    ie: rhncli -c inpkgs -p xldn1979nap,20130410T17:00,httpd-2.2.15-15.el6_2.1.x86_64.rpm,gcc,gdbc-241279-1.el6.x86_64.rpm,tomcat'''
 
-   if KAuth().grpcheck(perms['inpkgs'],eq.user):
+   if KAuth().grpcheck(perms['inpkgs'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -477,7 +477,7 @@ def inpkgs(req):
 
 def chksched(req):
    '''SYSTEM MANAGEMENT| Check scheduled package installs on given host using scheduled time as the key:\n   rhncli -c chksched -p <systemname(short)>,<YYYYMMDDTHH:MM>'''
-   if KAuth().grpcheck(perms['chksched'],eq.user):
+   if KAuth().grpcheck(perms['chksched'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
