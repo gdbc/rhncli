@@ -113,6 +113,31 @@ class RHNApi:
          return "Failed: incorrect channel name, maybe, mmm?"
 
 
+   def diffSysPkgs(self,systemname1,systemname2):
+      key1, client1 = self.__getKey__()
+      systemname1=str(sys['opt0']).strip()
+      systemname2=str(sys['opt1']).strip()
+      p1 = [] 
+      p2 = [] 
+      getId1 = client1.system.getId(key1,systemname1)[0]['id']
+      packages1 = client1.system.listPackages(key1,getId1)	
+      getId2 = client1.system.getId(key1,systemname2)[0]['id']
+      packages2 = client1.system.listPackages(key1,getId2)	
+
+      for i in packages1:
+         p1.append("%s-%s-%s.%s.rpm"%(i['name'], i['version'],i['release'], i['arch'])
+
+      for i in packages2:
+         p2.append("%s-%s-%s.%s.rpm" %(i['name'], i['version'],i['release'], i['arch']))
+
+      pkglist=[a for a in p1 if a not in p2]
+
+      if pkglist:
+         return "\n".join(pkglist[:-1])
+      else:
+         return "Fail"
+
+
    def getHPkgs(self, systemname):
       key1, client1 = getKey()
       pkglist = ""

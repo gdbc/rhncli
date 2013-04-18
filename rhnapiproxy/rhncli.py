@@ -31,6 +31,7 @@ perms={ 'help': ['rhnadmins'],
    'inpkgs': ['rhnadmins'],
    'chksched': ['rhnadmins'],
    'lsyspkgs': ['rhnadmins'],
+   'diffsyspkgs': ['rhnadmins'],
    'lsyschans': ['rhnadmins'],
    'lsubsyschans': ['rhnadmins'],
    'csyschans': ['rhnadmins'],
@@ -292,6 +293,23 @@ def lsyspkgs(req,opt0=""):
             return "Error: lsyspkgs"
       else:
          return noVars 
+   else:
+      return noAuth 
+
+def diffsyspkgs(req,opt0=""):
+   '''SYSTEM MANAGEMENT| List all packages on a isystem1 but not on system2\n   rhncli -c lsyspkgs -p <systemname1(short)>,<systemname2(short)>'''
+
+   if KAuth().grpcheck(perms['diffsyspkgs'],req.user):
+   ## Run function ##
+      V={}
+      form = mod_python.util.FieldStorage(req)
+      for i in form.keys():
+         V[i] = form[i].value
+
+      try:
+         return RHNApi().diffSysPkgs(V) 
+      except Exception as e:
+         return "Error: diffsyspkgs " + str(e)
    else:
       return noAuth 
 
