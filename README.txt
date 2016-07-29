@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Summary:
 
-An client/server cli to RHN Satellite's api using SSO(kerberos) for user authentication and group lookups for authorisation.
+An client/server cli to RHN Satellite's or Spacewalks api using SSO(kerberos) for user authentication and group lookups for authorisation.
 
 General: 
 
