@@ -6,8 +6,8 @@ from KrbAuth import KAuth
 from RHNAPI import RHNApi
 
 #    
-#    Copyright (C) 2013 Graeme David Brooks-Crawford 
-#    < graemedbc at gmail dot com >
+#    Copyright (C) 2013 Graeme David Brooks-Crawford < graemedbc at gmail dot com >
+#    Copyright (C) 2013 Chris Procter < chris-procter at talk21 dot com >
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License.
@@ -26,6 +26,29 @@ from RHNAPI import RHNApi
 noAuth="\nError: Not in Authorized Group!\n"
 noVars="\nError: Not enough variables!\n"
 
+perms={ 'help': ['rhnadmins'],
+   'ingrp': ['rhnadmins'],
+   'inpkgs': ['rhnadmins'],
+   'chksched': ['rhnadmins'],
+   'lsyspkgs': ['rhnadmins'],
+   'lsyschans': ['rhnadmins'],
+   'lsubsyschans': ['rhnadmins'],
+   'csyschans': ['rhnadmins'],
+   'lsyswpkg': ['rhnadmins'],
+   'lsyswopkg': ['rhnadmins'],
+   'lsysonchan': ['rhnadmins'],
+   'lchans': ['rhnadmins'],
+   'latestpkg': ['rhnadmins'],
+   'psearch': ['rhnadmins'],
+   'lpkgs': ['rhnadmins'],
+   'cp2chan': ['rhnadmins'],
+   'uppkg': ['rhnadmins'],
+   'downpkg': ['rhnadmins'],
+   'ldeps': ['rhnadmins'],
+   'lclog': ['rhnadmins'],
+   'ldesc': ['rhnadmins'],
+   'rmpkg': ['rhnadmins'],
+}
 
 ### Connectivity test code ### 
 
@@ -43,10 +66,9 @@ def testVars(req):
 ### Check if user is in group ###
 
 def ingrp(req):
+   '''check if user is in group\n rhncli -c ingrp'''
    ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   if KAuth().grpcheck(perms['ingrp'],req.user):
    ## Run function ## 
       return "Group is Authorized"
    else:
@@ -59,40 +81,26 @@ def ingrp(req):
 
 ### List all functions and how to use them ###
 
-###%%%% NEED TO LIST WHAT FUNCTIONS A USER HAS ACCESS TO DYNAMICALLY %%%%### 
-
 def help(req):
+   ''' display help:\n rhncli -c help or rhncli -l'''
    ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   if KAuth().grpcheck(perms['help'],req.user):
+      grplist=KAuth().getgrplist(req.user)
+      l=dict()
+      for f in perms.keys():
+         if set(perms[f]).intersection(grplist) :
+            try:
+               (section,text)=globals()[f].__doc__.split('|',1)
+            except:
+               section = "Misc"
+               text = globals()[f].__doc__
 
-   ## Run function ##
+            if not l.get(section) :
+               l[section] = "\n   *** %s ***\n\n"%section
 
-      l = ["\n   *** SYSTEM MANAGEMENT ***\n\n",
-         "Schedule package installs on host to start on first check in from a proposed time or use \"now\":\n   rhncli -c inpkgs -p <systemname(short)>,<YYYYMMDDTHH:MM | now><comma separated list of EXPLICIT or GENERIC(defaults to latest) pkg names>\n    ie: rhncli -c inpkgs -p xldn1979nap,20130410T17:00,httpd-2.2.15-15.el6_2.1.x86_64.rpm,gcc,gdbc-241279-1.el6.x86_64.rpm,tomcat\n",
-         "Check scheduled package installs on given host using scheduled time as the key:\n   rhncli -c chksched -p <systemname(short)>,<YYYYMMDDTHH:MM>\n",
-         "List all packages on a given host:\n   rhncli -c lsyspkgs -p <systemname(short)>\n",
-         "List hosts subscribed channels:\n   rhncli -c lsyschans -p <systemname(short)>\n",
-         "List hosts subscribable channels:\n   rhncli -c lsubsyschans -p <systemname(short)>\n",
-         "Change hosts channels:\n   rhncli -c csyschans -p <systemname(short)>,<parent>,<child channel>,<child channel>, ...\n",       
-         "List all hosts WITH package installed:\n   rhncli -c lsyswpkg -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>\n",
-         "List all hosts WITHOUT package installed:\n   rhncli -c lsyswopkg -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>\n",
-         "List all hosts subscribed to specific channel:\n   rhncli -c lsysonchan -p <channel label>\n",
-     	 "\n   *** PACKAGE & CHANNEL MANAGEMENT ***\n\n",
-     	 "List all RHN Satellite channels:\n   rhncli -c lchans\n",
-         "Search for NEWEST available package using GENERIC name AND release OR channel:\n   rhncli -c latestpkg -p <generic package name>,5|6|<channel name>\n",
-         "Search for PACKAGES displaying ALL versions and hosting channels:\n   rhncli -c psearch -p <generic package name>\n",
-         "List all packages in a given channel:\n   rhncli -c lpkgs -p <channel label>\n",
-         "Copy package to channel:\n   rhncli -c cp2chan -p <channel label>,<EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>\n",
-         "Upload package to channel:\n   rhncli -c uppkg -p <channel label>,<EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>\n",
-         "Download package:\n   rhncli -c downpkg -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>\n",
-         "List package description:\n   rhncli -c ldesc -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>\n",
-         "List package changelog:\n   rhncli -c lclog -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>\n",
-         "List package dependencies:\n   rhncli -c ldeps -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>\n",
-         "Remove package from channel:\n   rhncli -c rmpkg -p <channel label>,<EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>\n",
-        ]
-      return "\n".join(l)
+            l[section] = "%s%s: %s\n\n"%(l[section],f,text)
+
+      return "\n".join(l.values())
    else:
       return noAuth 
 
@@ -101,10 +109,9 @@ def help(req):
 ### List all channels for current system ###
 
 def lsyschans(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''SYSTEM MANAGEMENT| List hosts subscribed channels:\n   rhncli -c lsyschans -p <systemname(short)>'''
+
+   if KAuth().grpcheck(perms['lsyschans'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -121,10 +128,9 @@ def lsyschans(req,opt0=""):
 ### List subscribable channels for current system ###
 
 def lsubsyschans(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''SYSTEM MANAGEMENT| List hosts subscribable channels:\n   rhncli -c lsubsyschans -p <systemname(short)>'''
+
+   if KAuth().grpcheck(perms['lsubsyschans'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -141,10 +147,9 @@ def lsubsyschans(req,opt0=""):
 ### Change system channels ###
 
 def csyschans(req):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''SYSTEM MANAGEMENT| Change hosts channels:\n   rhncli -c csyschans -p <systemname(short)>,<parent>,<child channel>,<child channel>, ...'''
+
+   if KAuth().grpcheck(perms['csyschans'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -162,10 +167,9 @@ def csyschans(req):
 ### List Channels ###
 
 def lchans(req):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| List all RHN Satellite channels:\n   rhncli -c lchans'''
+
+   if KAuth().grpcheck(perms['lchans'],req.user):
    ## Run function ##
       try:
          return RHNApi().getChans() 
@@ -179,10 +183,9 @@ def lchans(req):
 ### List Systems subscribed to channel ###
 
 def lsysonchan(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''SYSTEM MANAGEMENT| List all hosts subscribed to specific channel:\n   rhncli -c lsysonchan -p <channel label>'''
+
+   if KAuth().grpcheck(perms['lsysonchan'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -202,10 +205,9 @@ def lsysonchan(req,opt0=""):
 ### Search for pkg and show related channels ###
 
 def psearch(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| Search for PACKAGES displaying ALL versions and hosting channels:\n   rhncli -c psearch -p <generic package name>'''
+   
+   if KAuth().grpcheck(perms['psearch'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try: 
@@ -222,10 +224,9 @@ def psearch(req,opt0=""):
 ### List systems with package ###
 
 def lsyswpkg(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''SYSTEM MANAGEMENT| List all hosts WITH package installed:\n   rhncli -c lsyswpkg -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
+
+   if KAuth().grpcheck(perms['lsyswpkg'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -242,10 +243,9 @@ def lsyswpkg(req,opt0=""):
 ### List systems without package ###
 
 def lsyswopkg(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''SYSTEM MANAGEMENT| List all hosts WITHOUT package installed:\n   rhncli -c lsyswopkg -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
+
+   if KAuth().grpcheck(perms['lsyswopkg'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -262,10 +262,9 @@ def lsyswopkg(req,opt0=""):
 ### List all packages in a channel ###
 
 def lpkgs(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| List all packages in a given channel:\n   rhncli -c lpkgs -p <channel label>'''
+
+   if KAuth().grpcheck(perms['lpkgs'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -282,10 +281,9 @@ def lpkgs(req,opt0=""):
 ### List all packages on a client ###
 
 def lsyspkgs(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''SYSTEM MANAGEMENT| List all packages on a given host:\n   rhncli -c lsyspkgs -p <systemname(short)>'''
+
+   if KAuth().grpcheck(perms['lsyspkgs'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -302,10 +300,9 @@ def lsyspkgs(req,opt0=""):
 ### List package changelog ###
 
 def lclog(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| List package changelog:\n   rhncli -c lclog -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
+
+   if KAuth().grpcheck(perms['lclog'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:  
@@ -322,10 +319,9 @@ def lclog(req,opt0=""):
 ### List package deps ###
 
 def ldeps(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| List package dependencies:\n   rhncli -c ldeps -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
+
+   if KAuth().grpcheck(perms['ldeps'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try: 
@@ -342,10 +338,9 @@ def ldeps(req,opt0=""):
 ### List package description ###
 
 def ldesc(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| List package description:\n   rhncli -c ldesc -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
+
+   if KAuth().grpcheck(perms['ldesc'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -362,10 +357,9 @@ def ldesc(req,opt0=""):
 ### Search for latest pkg for given release ###
 
 def latestpkg(req):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| Search for NEWEST available package using GENERIC name AND release OR channel:\n   rhncli -c latestpkg -p <generic package name>,5|6|<channel name>'''
+
+   if KAuth().grpcheck(perms['latestpkg'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -383,10 +377,9 @@ def latestpkg(req):
 ### Copy package to a channel ###
 
 def cp2chan(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| Copy package to channel:\n   rhncli -c cp2chan -p <channel label>,<EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
+
+   if KAuth().grpcheck(perms['cp2chan'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -404,10 +397,9 @@ def cp2chan(req,opt0=""):
 ### Remove a package to a channel ###
 
 def rmpkg(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| Remove package from channel:\n   rhncli -c rmpkg -p <channel label>,<EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
+
+   if KAuth().grpcheck(perms['rmpkg'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -425,10 +417,9 @@ def rmpkg(req,opt0=""):
 ### Upload RPMs ###
 
 def uppkg(req): 
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| Upload package to channel:\n   rhncli -c uppkg -p <channel label>,<EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
+
+   if KAuth().grpcheck(perms['uppkg'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -446,10 +437,9 @@ def uppkg(req):
 ### Download RPMs ###
 
 def downpkg(req,opt0=""):
-   ## Auth Check ##
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''PACKAGE & CHANNEL MANAGEMENT| Download package:\n   rhncli -c downpkg -p <EXPLICIT package name ie: gdbc-241279-1.el6.x86_64.rpm>'''
+
+   if KAuth().grpcheck(perms['downpkg'],req.user):
    ## Run function ##
       if str(opt0) != "None":
          try:
@@ -466,11 +456,9 @@ def downpkg(req,opt0=""):
 ### Schedule rpm install ###
 
 def inpkgs(req):
-   ## Auth Check ##
-   #authlist=['rhnadmins']
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''SYSTEM MANAGEMENT| Schedule package installs on host to start on first check in from a proposed time or use \"now\":\n   rhncli -c inpkgs -p <systemname(short)>,<YYYYMMDDTHH:MM | now><comma separated list of EXPLICIT or GENERIC(defaults to latest) pkg names>\n    ie: rhncli -c inpkgs -p xldn1979nap,20130410T17:00,httpd-2.2.15-15.el6_2.1.x86_64.rpm,gcc,gdbc-241279-1.el6.x86_64.rpm,tomcat'''
+
+   if KAuth().grpcheck(perms['inpkgs'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
@@ -488,11 +476,8 @@ def inpkgs(req):
 ### Schedule rpm install ###
 
 def chksched(req):
-   ## Auth Check ##
-   #authlist=['rhnadmins']
-   authlist=['rhnadmins']
-   gcheck = KAuth().grpcheck(authlist,req.user)
-   if gcheck:
+   '''SYSTEM MANAGEMENT| Check scheduled package installs on given host using scheduled time as the key:\n   rhncli -c chksched -p <systemname(short)>,<YYYYMMDDTHH:MM>'''
+   if KAuth().grpcheck(perms['chksched'],req.user):
    ## Run function ##
       V={}
       form = mod_python.util.FieldStorage(req)
